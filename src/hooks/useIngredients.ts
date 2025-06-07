@@ -2,16 +2,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiService } from '../services/api';
 import { useToast } from './use-toast';
+import { Ingredient } from '../types/api';
 
 export const useIngredients = () => {
-  return useQuery({
+  return useQuery<Ingredient[]>({
     queryKey: ['ingredients'],
     queryFn: () => apiService.getIngredients(),
   });
 };
 
 export const useIngredient = (id: string) => {
-  return useQuery({
+  return useQuery<Ingredient>({
     queryKey: ['ingredients', id],
     queryFn: () => apiService.getIngredient(id),
     enabled: !!id,

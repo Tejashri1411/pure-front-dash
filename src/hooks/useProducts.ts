@@ -2,16 +2,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiService } from '../services/api';
 import { useToast } from './use-toast';
+import { Product } from '../types/api';
 
 export const useProducts = () => {
-  return useQuery({
+  return useQuery<Product[]>({
     queryKey: ['products'],
     queryFn: () => apiService.getProducts(),
   });
 };
 
 export const useProduct = (id: string) => {
-  return useQuery({
+  return useQuery<Product>({
     queryKey: ['products', id],
     queryFn: () => apiService.getProduct(id),
     enabled: !!id,
