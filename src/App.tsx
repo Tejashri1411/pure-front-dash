@@ -1,9 +1,9 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import AdminDashboard from "./pages/AdminDashboard";
 import AuthForm from "./pages/AuthForm";
@@ -31,10 +31,24 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   return !isAuthenticated ? <>{children}</> : <Navigate to="/products" replace />;
 };
 
+// New component for public product label (no authentication required)
+const PublicProductLabel = lazy(() => import("./pages/ProductLabel"));
+
 const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<AdminDashboard />} />
+      
+      {/* Public product label route - no authentication required */}
+      <Route 
+        path="/l/:id" 
+        element={
+          <Suspense fallback={<div>Loading...</div>}>
+            <PublicProductLabel />
+          </Suspense>
+        } 
+      />
+      
       <Route 
         path="/login" 
         element={
@@ -43,6 +57,7 @@ const AppRoutes = () => {
           </PublicRoute>
         } 
       />
+      
       <Route 
         path="/products" 
         element={
