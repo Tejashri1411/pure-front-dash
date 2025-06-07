@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -6,56 +7,59 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import Navigation from '../components/Navigation';
 import ProductPreviewDialog from '../components/ProductPreviewDialog';
-import { mockProducts, Product } from '../data/mockData';
-import { Plus, Search, Download, Upload, MoreHorizontal, Eye, FileText } from 'lucide-react';
+import { useProducts, useDeleteProduct } from '../hooks/useProducts';
+import { Plus, Search, Download, Upload, MoreHorizontal, FileText, QrCode, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const ProductList: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>(mockProducts);
   const [searchTerm, setSearchTerm] = useState('');
-  const [previewProduct, setPreviewProduct] = useState<Product | null>(null);
-  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewProduct, setPreviewProduct] = useState(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  const { data: products = [], isLoading, error } = useProducts();
+  const deleteProductMutation = useDeleteProduct();
 
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.sku.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredProducts = products.filter((product: any) =>
+    product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.sku?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleEdit = (id: string) => {
     navigate(`/products/edit/${id}`);
   };
 
+  const handleDelete = (id: string) => {
+    deleteProductMutation.mutate(id);
+  };
+
   const handleDetails = (id: string) => {
     navigate(`/products/details/${id}`);
   };
 
-  const handlePreview = (product: Product) => {
-    setPreviewProduct(product);
-    setPreviewOpen(true);
-  };
-
-  const handleDelete = (id: string) => {
-    setProducts(products.filter(p => p.id !== id));
-    toast({
-      title: "Product deleted",
-      description: "Product has been successfully deleted.",
+  const handleDuplicate = (product: any) => {
+    navigate('/products/create', { 
+      state: { 
+        duplicateFrom: {
+          ...product,
+          name: `${product.name} (Copy)`,
+          sku: `${product.sku}-COPY`
+        }
+      }
     });
   };
 
-  const handleDuplicate = (product: Product) => {
-    const newProduct = {
-      ...product,
-      id: Date.now().toString(),
-      name: `${product.name} (Copy)`,
-      sku: `${product.sku}-COPY`
-    };
-    setProducts([...products, newProduct]);
+  const handlePreview = (product: any) => {
+    setPreviewProduct(product);
+  };
+
+  const handleGenerateQR = (id: string) => {
+    const qrUrl = `${window.location.origin}/l/${id}`;
+    navigator.clipboard.writeText(qrUrl);
     toast({
-      title: "Product duplicated",
-      description: "Product has been successfully duplicated.",
+      title: "QR URL copied",
+      description: "The product label URL has been copied to clipboard",
     });
   };
 
@@ -65,15 +69,18 @@ const ProductList: React.FC = () => {
 
   const handleExport = () => {
     import('xlsx').then((XLSX) => {
-      const worksheet = XLSX.utils.json_to_sheet(products.map(product => ({
+      const worksheet = XLSX.utils.json_to_sheet(products.map((product: any) => ({
         Name: product.name,
         Brand: product.brand,
+        SKU: product.sku,
+        EAN: product.ean,
         'Net Volume': product.netVolume,
+        Alcohol: product.alcohol,
         Vintage: product.vintage,
         Type: product.type,
         'Sugar Content': product.sugarContent,
-        Appellation: product.appellation,
-        SKU: product.sku
+        Country: product.country,
+        Appellation: product.appellation
       })));
       
       const workbook = XLSX.utils.book_new();
@@ -88,6 +95,30 @@ const ProductList: React.FC = () => {
     });
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center">Loading products...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navigation />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center text-red-600">
+            Error loading products: {error.message}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
@@ -95,7 +126,7 @@ const ProductList: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Products</h1>
-          <p className="text-gray-600">Manage your product inventory and details</p>
+          <p className="text-gray-600">Manage your wine products and generate labels</p>
         </div>
 
         <div className="bg-white rounded-lg shadow">
@@ -104,7 +135,7 @@ const ProductList: React.FC = () => {
               <div className="flex gap-2">
                 <Button 
                   onClick={() => navigate('/products/create')}
-                  className="bg-purple-600 hover:bg-purple-700"
+                  className="bg-green-600 hover:bg-green-700"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Create New
@@ -136,27 +167,32 @@ const ProductList: React.FC = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
-                  <TableHead>Net Volume</TableHead>
-                  <TableHead>Vintage</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Sugar Content</TableHead>
-                  <TableHead>Appellation</TableHead>
+                  <TableHead>Brand</TableHead>
                   <TableHead>SKU</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Alcohol</TableHead>
+                  <TableHead>Vintage</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredProducts.map((product) => (
+                {filteredProducts.map((product: any) => (
                   <TableRow key={product.id} className="hover:bg-gray-50">
                     <TableCell className="font-medium">{product.name}</TableCell>
-                    <TableCell>{product.netVolume}</TableCell>
-                    <TableCell>{product.vintage}</TableCell>
-                    <TableCell>{product.type}</TableCell>
-                    <TableCell>{product.sugarContent}</TableCell>
-                    <TableCell>{product.appellation}</TableCell>
+                    <TableCell>{product.brand}</TableCell>
                     <TableCell>{product.sku}</TableCell>
+                    <TableCell>{product.type}</TableCell>
+                    <TableCell>{product.alcohol}</TableCell>
+                    <TableCell>{product.vintage}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePreview(product)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"
@@ -167,9 +203,9 @@ const ProductList: React.FC = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handlePreview(product)}
+                          onClick={() => handleGenerateQR(product.id)}
                         >
-                          <Eye className="h-4 w-4" />
+                          <QrCode className="h-4 w-4" />
                         </Button>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -191,9 +227,6 @@ const ProductList: React.FC = () => {
                             <DropdownMenuItem onClick={() => handleDuplicate(product)}>
                               Duplicate
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handlePreview(product)}>
-                              Preview
-                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
@@ -205,11 +238,11 @@ const ProductList: React.FC = () => {
           </div>
         </div>
       </div>
-
-      <ProductPreviewDialog 
+      
+      <ProductPreviewDialog
         product={previewProduct}
-        open={previewOpen}
-        onClose={() => setPreviewOpen(false)}
+        open={!!previewProduct}
+        onClose={() => setPreviewProduct(null)}
       />
     </div>
   );

@@ -1,13 +1,24 @@
 
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { mockProducts } from '../data/mockData';
+import { useProduct } from '../hooks/useProducts';
 
 const ProductLabel: React.FC = () => {
   const { id } = useParams();
-  const product = mockProducts.find(p => p.id === id);
+  const { data: product, isLoading, error } = useProduct(id || '');
 
-  if (!product) {
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+          <p className="mt-4 text-gray-600">Loading product...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !product) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
@@ -24,7 +35,7 @@ const ProductLabel: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">WINE {product.vintage}</h1>
-          <h2 className="text-2xl text-gray-700 mb-2">{product.name.toLowerCase()}</h2>
+          <h2 className="text-2xl text-gray-700 mb-2">{product.name?.toLowerCase()}</h2>
           <p className="text-lg text-gray-600">{product.appellation}</p>
         </div>
 
@@ -33,7 +44,7 @@ const ProductLabel: React.FC = () => {
           <div className="flex justify-center space-x-6 text-sm text-gray-700">
             <span>{product.type}</span>
             <span>{product.sugarContent}</span>
-            <span>750 ml</span>
+            <span>{product.netVolume}</span>
             <span>{product.alcohol}</span>
           </div>
         </div>
@@ -117,7 +128,7 @@ const ProductLabel: React.FC = () => {
 
         {/* Additional Information */}
         <div className="text-center text-sm text-gray-600 space-y-2">
-          <p><strong>Producer:</strong> Château Example</p>
+          <p><strong>Producer:</strong> {product.brand}</p>
           <p><strong>Country:</strong> {product.country}</p>
           <p><strong>SKU:</strong> {product.sku}</p>
           <p><strong>EAN:</strong> {product.ean}</p>
