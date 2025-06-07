@@ -9,6 +9,7 @@ import Navigation from '../components/Navigation';
 import { useIngredients, useDeleteIngredient } from '../hooks/useIngredients';
 import { Plus, Search, Download, Upload, MoreHorizontal, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Ingredient } from '../types/api';
 
 const IngredientList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -18,7 +19,7 @@ const IngredientList: React.FC = () => {
   const { data: ingredients = [], isLoading, error } = useIngredients();
   const deleteIngredientMutation = useDeleteIngredient();
 
-  const filteredIngredients = ingredients.filter((ingredient: any) =>
+  const filteredIngredients = ingredients.filter((ingredient: Ingredient) =>
     ingredient.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     ingredient.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     ingredient.eNumber?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -36,7 +37,7 @@ const IngredientList: React.FC = () => {
     navigate(`/ingredients/details/${id}`);
   };
 
-  const handleDuplicate = (ingredient: any) => {
+  const handleDuplicate = (ingredient: Ingredient) => {
     navigate('/ingredients/create', {
       state: {
         duplicateFrom: {
@@ -54,7 +55,7 @@ const IngredientList: React.FC = () => {
 
   const handleExport = () => {
     import('xlsx').then((XLSX) => {
-      const worksheet = XLSX.utils.json_to_sheet(ingredients.map((ingredient: any) => ({
+      const worksheet = XLSX.utils.json_to_sheet(ingredients.map((ingredient: Ingredient) => ({
         Name: ingredient.name,
         Category: ingredient.category,
         'E Number': ingredient.eNumber || '',
@@ -152,7 +153,7 @@ const IngredientList: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredIngredients.map((ingredient: any) => (
+                {filteredIngredients.map((ingredient: Ingredient) => (
                   <TableRow key={ingredient.id} className="hover:bg-gray-50">
                     <TableCell className="font-medium">{ingredient.name}</TableCell>
                     <TableCell>{ingredient.category}</TableCell>

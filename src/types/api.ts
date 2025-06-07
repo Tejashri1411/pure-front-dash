@@ -22,6 +22,7 @@ export interface Ingredient {
   category: string;
   eNumber?: string;
   allergen?: string;
+  allergens?: string[];
   createdAt?: string;
   updatedAt?: string;
 }

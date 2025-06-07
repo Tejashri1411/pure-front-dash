@@ -1,4 +1,6 @@
 
+import { Product, Ingredient, ApiResponse } from '../types/api';
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 class ApiService {
@@ -28,94 +30,94 @@ class ApiService {
   }
 
   // Auth endpoints
-  async login(email: string, password: string) {
+  async login(email: string, password: string): Promise<ApiResponse<any>> {
     return this.request('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
   }
 
-  async logout() {
+  async logout(): Promise<ApiResponse<any>> {
     return this.request('/auth/logout', {
       method: 'POST',
     });
   }
 
   // Products endpoints
-  async getProducts() {
-    return this.request('/products');
+  async getProducts(): Promise<Product[]> {
+    return this.request<Product[]>('/products');
   }
 
-  async getProduct(id: string) {
-    return this.request(`/products/${id}`);
+  async getProduct(id: string): Promise<Product> {
+    return this.request<Product>(`/products/${id}`);
   }
 
-  async createProduct(productData: any) {
-    return this.request('/products', {
+  async createProduct(productData: any): Promise<Product> {
+    return this.request<Product>('/products', {
       method: 'POST',
       body: JSON.stringify(productData),
     });
   }
 
-  async updateProduct(id: string, productData: any) {
-    return this.request(`/products/${id}`, {
+  async updateProduct(id: string, productData: any): Promise<Product> {
+    return this.request<Product>(`/products/${id}`, {
       method: 'PUT',
       body: JSON.stringify(productData),
     });
   }
 
-  async deleteProduct(id: string) {
-    return this.request(`/products/${id}`, {
+  async deleteProduct(id: string): Promise<void> {
+    return this.request<void>(`/products/${id}`, {
       method: 'DELETE',
     });
   }
 
   // Ingredients endpoints
-  async getIngredients() {
-    return this.request('/ingredients');
+  async getIngredients(): Promise<Ingredient[]> {
+    return this.request<Ingredient[]>('/ingredients');
   }
 
-  async getIngredient(id: string) {
-    return this.request(`/ingredients/${id}`);
+  async getIngredient(id: string): Promise<Ingredient> {
+    return this.request<Ingredient>(`/ingredients/${id}`);
   }
 
-  async createIngredient(ingredientData: any) {
-    return this.request('/ingredients', {
+  async createIngredient(ingredientData: any): Promise<Ingredient> {
+    return this.request<Ingredient>('/ingredients', {
       method: 'POST',
       body: JSON.stringify(ingredientData),
     });
   }
 
-  async updateIngredient(id: string, ingredientData: any) {
-    return this.request(`/ingredients/${id}`, {
+  async updateIngredient(id: string, ingredientData: any): Promise<Ingredient> {
+    return this.request<Ingredient>(`/ingredients/${id}`, {
       method: 'PUT',
       body: JSON.stringify(ingredientData),
     });
   }
 
-  async deleteIngredient(id: string) {
-    return this.request(`/ingredients/${id}`, {
+  async deleteIngredient(id: string): Promise<void> {
+    return this.request<void>(`/ingredients/${id}`, {
       method: 'DELETE',
     });
   }
 
   // Import endpoints
-  async importProducts(file: File) {
+  async importProducts(file: File): Promise<ApiResponse<any>> {
     const formData = new FormData();
     formData.append('file', file);
     
-    return this.request('/products/import', {
+    return this.request<ApiResponse<any>>('/products/import', {
       method: 'POST',
       body: formData,
       headers: {}, // Remove Content-Type to let browser set it for FormData
     });
   }
 
-  async importIngredients(file: File) {
+  async importIngredients(file: File): Promise<ApiResponse<any>> {
     const formData = new FormData();
     formData.append('file', file);
     
-    return this.request('/ingredients/import', {
+    return this.request<ApiResponse<any>>('/ingredients/import', {
       method: 'POST',
       body: formData,
       headers: {}, // Remove Content-Type to let browser set it for FormData

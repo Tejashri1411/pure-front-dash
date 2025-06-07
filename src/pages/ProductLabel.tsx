@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useProduct } from '../hooks/useProducts';
@@ -34,18 +33,18 @@ const ProductLabel: React.FC = () => {
       <div className="max-w-2xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">WINE {product.vintage}</h1>
-          <h2 className="text-2xl text-gray-700 mb-2">{product.name?.toLowerCase()}</h2>
-          <p className="text-lg text-gray-600">{product.appellation}</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">WINE {product.vintage || ''}</h1>
+          <h2 className="text-2xl text-gray-700 mb-2">{product.name?.toLowerCase() || ''}</h2>
+          <p className="text-lg text-gray-600">{product.appellation || ''}</p>
         </div>
 
         {/* Wine Details */}
         <div className="text-center mb-8">
           <div className="flex justify-center space-x-6 text-sm text-gray-700">
-            <span>{product.type}</span>
-            <span>{product.sugarContent}</span>
-            <span>{product.netVolume}</span>
-            <span>{product.alcohol}</span>
+            <span>{product.type || ''}</span>
+            <span>{product.sugarContent || ''}</span>
+            <span>{product.netVolume || ''}</span>
+            <span>{product.alcohol || ''}</span>
           </div>
         </div>
 
@@ -128,10 +127,10 @@ const ProductLabel: React.FC = () => {
 
         {/* Additional Information */}
         <div className="text-center text-sm text-gray-600 space-y-2">
-          <p><strong>Producer:</strong> {product.brand}</p>
-          <p><strong>Country:</strong> {product.country}</p>
-          <p><strong>SKU:</strong> {product.sku}</p>
-          <p><strong>EAN:</strong> {product.ean}</p>
+          <p><strong>Producer:</strong> {product.brand || ''}</p>
+          <p><strong>Country:</strong> {product.country || ''}</p>
+          <p><strong>SKU:</strong> {product.sku || ''}</p>
+          <p><strong>EAN:</strong> {product.ean || ''}</p>
         </div>
       </div>
     </div>
